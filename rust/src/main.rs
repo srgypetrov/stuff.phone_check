@@ -14,10 +14,10 @@ use rayon::prelude::*;
 
 
 const FILES: [&str; 4] = [
-    "phones_registry/DEF-9x.csv",
-    "phones_registry/ABC-8x.csv",
-    "phones_registry/ABC-3x.csv",
-    "phones_registry/ABC-4x.csv"
+    "DEF-9x.csv",
+    "ABC-8x.csv",
+    "ABC-3x.csv",
+    "ABC-4x.csv"
 ];
 
 
@@ -34,16 +34,21 @@ fn run() -> Result<(), Box<Error>> {
     let wanted_hashes = get_wanted_hashes()?;
     let mut found_hashes: HashSet<String> = HashSet::new();
     for filename in &FILES {
-        let file = File::open(filename)?;
+        println!("FILE:{}", filename);
+        let filepath = format!("phones_registry/{}", filename);
+        let file = File::open(filepath)?;
         let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
-        for result in rdr.deserialize() {
+        for (i, result) in rdr.deserialize().enumerate() {
+            if i % 50 == 0 {
+                println!("LINE:{}", i);
+            }
             let record: (u16, u32, u32, u32, String, String) = result?;
             let (code, start, end, ..) = record;
             let checked_hashes: HashSet<String> = (start..end + 1).into_par_iter().map(|number| {
                 let pnumber = format!("7{}{:07}", code, number);
                 let phash = sha1::Sha1::from(&pnumber).digest().to_string();
                 if wanted_hashes.contains(&phash) {
-                    println!("PHONE: {}", pnumber);
+                    println!("PHONE:{}", pnumber);
                     return Some(phash)
                 }
                 return None
@@ -55,7 +60,7 @@ fn run() -> Result<(), Box<Error>> {
         }
     }
     for phone in wanted_hashes.difference(&found_hashes) {
-        println!("UNKNOWN: {}", phone);
+        println!("UNKNOWN:{}", phone);
     }
     Ok(())
 }
@@ -64,8 +69,8 @@ fn run() -> Result<(), Box<Error>> {
 fn main() {
     let start = Instant::now();
     if let Err(err) = run() {
-        println!("ERROR: {}", err);
+        println!("ERROR:{}", err);
         process::exit(1);
     }
-    println!("RUNTIME: {}", start.elapsed().as_secs());
+    println!("RUNTIME:{}", start.elapsed().as_secs());
 }
