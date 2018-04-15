@@ -13,6 +13,14 @@ use csv::ReaderBuilder;
 use rayon::prelude::*;
 
 
+const FILES: [&str; 4] = [
+    "phones_registry/DEF-9x.csv",
+    "phones_registry/ABC-8x.csv",
+    "phones_registry/ABC-3x.csv",
+    "phones_registry/ABC-4x.csv"
+];
+
+
 fn get_wanted_hashes() -> Result<HashSet<String>, String> {
     let wanted_hashes: HashSet<String> = args().skip(1).collect();
     if wanted_hashes.is_empty() {
@@ -25,15 +33,12 @@ fn get_wanted_hashes() -> Result<HashSet<String>, String> {
 fn run() -> Result<(), Box<Error>> {
     let wanted_hashes = get_wanted_hashes()?;
     let mut found_hashes: HashSet<String> = HashSet::new();
-    let files = ["DEF-9x.csv", "ABC-8x.csv", "ABC-3x.csv", "ABC-4x.csv"];
-    for filename in &files {
+    for filename in &FILES {
         let file = File::open(filename)?;
         let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
-        for result in rdr.records() {
-            let record = result?;
-            let code = record.get(0).unwrap();
-            let start: i32 = record.get(1).unwrap().parse().unwrap();
-            let end: i32 = record.get(2).unwrap().parse().unwrap();
+        for result in rdr.deserialize() {
+            let record: (u16, u32, u32, u32, String, String) = result?;
+            let (code, start, end, ..) = record;
             let checked_hashes: HashSet<String> = (start..end + 1).into_par_iter().map(|number| {
                 let pnumber = format!("7{}{:07}", code, number);
                 let phash = sha1::Sha1::from(&pnumber).digest().to_string();
