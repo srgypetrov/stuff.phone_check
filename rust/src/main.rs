@@ -35,11 +35,11 @@ fn run() -> Result<(), Box<Error>> {
     let mut found_hashes: HashSet<String> = HashSet::new();
     for filename in &FILES {
         println!("FILE:{}", filename);
-        let filepath = format!("phones_registry/{}", filename);
-        let file = File::open(filepath)?;
+        let base_dir = std::env::current_dir()?;
+        let file = File::open(base_dir.join("phone_registry").join(&filename))?;
         let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
         for (i, result) in rdr.deserialize().enumerate() {
-            if i % 50 == 0 {
+            if i % 1000 == 0 {
                 println!("LINE:{}", i);
             }
             let record: (u16, u32, u32, u32, String, String) = result?;
