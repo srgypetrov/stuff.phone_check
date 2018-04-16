@@ -34,25 +34,24 @@ fn run() -> Result<(), Box<Error>> {
     let wanted_hashes = get_wanted_hashes()?;
     let mut found_hashes: HashSet<String> = HashSet::new();
     for filename in &FILES {
-        println!("FILE:{}", filename);
         let base_dir = std::env::current_dir()?;
         let file = File::open(base_dir.join("phone_registry").join(&filename))?;
         let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
         for (i, result) in rdr.deserialize().enumerate() {
             if i % 1000 == 0 {
-                println!("LINE:{}", i);
+                println!("LINE:{} {}", filename, i);
             }
             let record: (u16, u32, u32, u32, String, String) = result?;
             let (code, start, end, ..) = record;
-            let checked_hashes: HashSet<String> = (start..end + 1).into_par_iter().map(|number| {
-                let pnumber = format!("7{}{:07}", code, number);
-                let phash = sha1::Sha1::from(&pnumber).digest().to_string();
-                if wanted_hashes.contains(&phash) {
-                    println!("PHONE:{}", pnumber);
-                    return Some(phash)
+            let checked_hashes: HashSet<String> = (start..end + 1).into_par_iter().filter_map(|number| {
+                let phone_number = format!("7{}{:07}", code, number);
+                let phone_hash = sha1::Sha1::from(&phone_number).digest().to_string();
+                if wanted_hashes.contains(&phone_hash) {
+                    println!("PHONE:{} {}", phone_number, phone_hash);
+                    return Some(phone_hash)
                 }
                 return None
-            }).filter_map(|x| x).collect();
+            }).collect();
             found_hashes.extend(checked_hashes);
             if found_hashes.is_superset(&wanted_hashes) {
                 return Ok(())
