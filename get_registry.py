@@ -1,8 +1,9 @@
 import os
 import shutil
+from contextlib import closing
 from multiprocessing import Pool
 from urllib.error import URLError, HTTPError
-from urllib.request import urlretrieve
+from urllib.request import urlopen
 
 
 LOCAL_DIR = 'phone_registry'
@@ -12,28 +13,19 @@ FILENAMES = ['DEF-9x', 'ABC-8x', 'ABC-3x', 'ABC-4x']
 
 def get_registry_file(filename):
     print(f'Downloading {filename} ...')
-    local_file = f'{LOCAL_DIR}/{filename}_source.csv'
     try:
-        urlretrieve(f'{BASE_URL}{filename}.csv', local_file)
+        response = urlopen(f'{BASE_URL}{filename}.csv')
     except (URLError, HTTPError) as err:
         print(f'Error: {err}')
-    else:
-        print(f'{filename} downloaded')
-    fix_encoding(local_file, filename)
-
-
-def fix_encoding(local_file, filename):
-    out_file = f'{LOCAL_DIR}/{filename}.csv'
-    source = open(local_file, 'r', encoding='windows-1251')
-    output = open(out_file, 'w', encoding='utf-8')
-    with source, output:
+        return
+    filepath = f'{LOCAL_DIR}/{filename}.csv'
+    with closing(response), open(filepath, 'w', encoding='utf-8') as file:
         while True:
-            chunk = source.read(4096)
+            chunk = response.read(4096).decode('windows-1251')
             if not chunk:
                 break
-            output.write(chunk)
-    os.remove(local_file)
-    print(f'{filename} encoding fixed')
+            file.write(chunk)
+    print(f'{filename} downloaded')
 
 
 def download_files():
