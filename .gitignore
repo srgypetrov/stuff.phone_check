@@ -1,5 +1,7 @@
+__pycache__
 .vscode
 *.csv
+*.log
 *.lock
 rust/target
 bottle.py
