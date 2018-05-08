@@ -3,5 +3,5 @@ __pycache__
 *.csv
 *.log
 *.lock
+*.json
 rust/target
-bottle.py

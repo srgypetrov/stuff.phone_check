@@ -1,0 +1,64 @@
+<devicefingerprint>
+	<Attributes>
+<Attribute>
+		<Name>OS</Name>
+		<Value><![CDATA[Mac OSX]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>TIME_ZONE</Name>
+		<Value><![CDATA[3]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>SCREEN_ATTRIBUTES</Name>
+		<Value><![CDATA[24|1280|800|1276|777]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>USER_AGENT</Name>
+		<Value><![CDATA[mozilla/5.0]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>BROWSER_VER</Name>
+		<Value><![CDATA[Firefox 59]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>LANGUAGES</Name>
+		<Value><![CDATA[BRW=ru|SYS=|USR=]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>FLASH_VER</Name>
+		<Value><![CDATA[29.0.0]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>SILVERLIGHT</Name>
+		<Value><![CDATA[Not Installed]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>PLUGINS</Name>
+		<Value><![CDATA[]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>FONTS</Name>
+		<Value><![CDATA[Arial]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>TIME_SKEW</Name>
+		<Value><![CDATA[]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>GEOIP_HTML5</Name>
+		<Value><![CDATA[User denied geolocation prompt]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>CANVAS</Name>
+		<Value><![CDATA[47190690cff9e14349d2fe21ab8ebecebed6a969bbf6d8542c89777513fad5ae]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>LOCAL_IP</Name>
+		<Value><![CDATA[1.1.1.1]]></Value>
+	</Attribute>
+<Attribute>
+		<Name>HASH</Name>
+		<Value><![CDATA[49d2fe21ab471909e143690cff8ebecebed6a969bbf6d8542c89777513fad5ae]]></Value>
+	</Attribute>
+	</Attributes>
+</devicefingerprint>
