@@ -46,16 +46,17 @@ fn check_hashes(record: Record, wanted: &HashSet<String>) -> HashSet<String> {
 
 
 fn scan_file(
+    fileno: usize,
     filename: &str,
     wanted: &HashSet<String>,
     found: &mut HashSet<String>
 ) -> Result<bool, Box<Error>> {
     let base_dir = std::env::current_dir()?;
-    let file = File::open(base_dir.join("phone_registry").join(&filename))?;
+    let file = File::open(base_dir.join("registry").join(&filename))?;
     let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
     for (i, result) in rdr.deserialize().enumerate() {
         if i % 1000 == 0 {
-            println!("LINE:{} {}", filename, i);
+            println!("LINE:{} {} {}", fileno, filename, i);
         }
         let record: Record = result?;
         let checked_hashes = check_hashes(record, &wanted);
@@ -71,8 +72,8 @@ fn scan_file(
 fn run() -> Result<(), Box<Error>> {
     let wanted_hashes = get_wanted_hashes()?;
     let mut found_hashes: HashSet<String> = HashSet::new();
-    for filename in &FILES {
-        if scan_file(filename, &wanted_hashes, &mut found_hashes)? {
+    for (fileno, filename) in FILES.iter().enumerate() {
+        if scan_file(fileno + 1, filename, &wanted_hashes, &mut found_hashes)? {
             return Ok(())
         }
     }
