@@ -23,9 +23,8 @@ def get_registry_file(cookies, filename):
         )
     filepath = os.path.join(BASE_PATH, filename)
     with closing(response), open(filepath, 'w', encoding='utf-8') as file:
-        for i, line in enumerate(response.iter_lines()):
-            file.write(line.decode('windows-1251'))
-        count = i + 1
+        for count, line in enumerate(response.iter_lines(), start=1):
+            file.write(line.decode('windows-1251') + '\n')
     print(f'{filename} downloaded')
     return (filename, count)
 
