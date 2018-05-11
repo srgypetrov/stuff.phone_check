@@ -18,8 +18,7 @@ def get_registry_file(cookies, filename):
     with requests.Session() as session:
         response = session.get(
             f'{FILES_URL}/{filename}',
-            cookies=cookies,
-            stream=True
+            cookies=cookies
         )
     filepath = os.path.join(BASE_PATH, filename)
     with closing(response), open(filepath, 'w', encoding='utf-8') as file:
