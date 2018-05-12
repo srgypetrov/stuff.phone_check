@@ -5,7 +5,9 @@ extern crate rayon;
 use std::collections::HashSet;
 use std::env::args;
 use std::error::Error;
-use std::fs::File;
+use std::io::Write;
+use std::fs::{File, remove_file};
+use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
 
@@ -20,6 +22,29 @@ const FILES: [&str; 4] = [
     "ABC-4x.csv"
 ];
 type Record = (u16, u32, u32, u32, String, String);
+
+
+fn get_base_path() -> Result<(PathBuf), Box<Error>> {
+    let current_path = std::env::current_exe()?;
+    let base_path = current_path.join("../../../..").canonicalize()?;
+    Ok(base_path)
+}
+
+
+fn create_pidfile() -> Result<(), Box<Error>> {
+    let base_path = get_base_path()?;
+    let mut file = File::create(base_path.join("check.pid"))?;
+    let pid = process::id().to_string();
+    file.write_all(pid.as_bytes())?;
+    Ok(())
+}
+
+
+fn remove_pidfile() -> Result<(), Box<Error>> {
+    let base_path = get_base_path()?;
+    remove_file(base_path.join("check.pid"))?;
+    Ok(())
+}
 
 
 fn get_wanted_hashes() -> Result<HashSet<String>, String> {
@@ -51,8 +76,8 @@ fn scan_file(
     wanted: &HashSet<String>,
     found: &mut HashSet<String>
 ) -> Result<bool, Box<Error>> {
-    let base_dir = std::env::current_dir()?;
-    let file = File::open(base_dir.join("registry").join(&filename))?;
+    let base_path = get_base_path()?;
+    let file = File::open(base_path.join("registry").join(&filename))?;
     let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
     for (i, result) in rdr.deserialize().enumerate() {
         if i % 1000 == 0 {
@@ -86,9 +111,11 @@ fn run() -> Result<(), Box<Error>> {
 
 fn main() {
     let start = Instant::now();
+    create_pidfile().unwrap();
     if let Err(err) = run() {
         println!("ERROR:{}", err);
         process::exit(1);
     }
+    remove_pidfile().unwrap();
     println!("RUNTIME:{}", start.elapsed().as_secs());
 }
