@@ -29,7 +29,8 @@ def start():
             'success': False,
             'message': 'Process already running'
         }
-    valid, data = validate_hashes(bottle.request.json)
+    hashes_data = bottle.request.json.get('hashes', '')
+    valid, data = validate_hashes(hashes_data)
     if not valid:
         return {
             'success': False,
