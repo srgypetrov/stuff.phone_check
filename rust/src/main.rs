@@ -25,9 +25,12 @@ type Record = (u16, u32, u32, u32, String, String);
 
 
 fn get_base_path() -> Result<(PathBuf), Box<Error>> {
-    let current_path = std::env::current_exe()?;
-    let base_path = current_path.join("../../../..").canonicalize()?;
-    Ok(base_path)
+    let current_exe = std::env::current_exe()?;
+    if let Some(current_dir) = current_exe.parent() {
+        let base_path = current_dir.join("../../..").canonicalize()?;
+        return Ok(base_path)
+    }
+    Err(From::from("Can't resolve base path"))
 }
 
 
