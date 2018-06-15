@@ -1,4 +1,3 @@
-import json
 import os
 from contextlib import closing
 from functools import partial
@@ -22,10 +21,9 @@ def get_registry_file(cookies, filename):
         )
     filepath = os.path.join(BASE_PATH, filename)
     with closing(response), open(filepath, 'w', encoding='utf-8') as file:
-        for count, line in enumerate(response.iter_lines(), start=1):
-            file.write(line.decode('windows-1251') + '\n')
+        for chunk in response.iter_content(4096):
+            file.write(chunk.decode('windows-1251'))
     print(f'{filename} downloaded')
-    return (filename, count)
 
 
 def get_cookies():
@@ -46,10 +44,7 @@ def download_files():
     cookies = get_cookies()
     download = partial(get_registry_file, cookies)
     with Pool() as pool:
-        meta = pool.map(download, FILE_NAMES)
-    meta_path = os.path.join(BASE_PATH, 'meta.json')
-    with open(meta_path, 'w') as metafile:
-        json.dump(dict(meta), metafile)
+        pool.map(download, FILE_NAMES)
 
 
 if __name__ == '__main__':
