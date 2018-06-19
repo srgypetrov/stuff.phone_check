@@ -5,8 +5,7 @@ extern crate rayon;
 use std::collections::HashSet;
 use std::env::args;
 use std::error::Error;
-use std::io::Write;
-use std::fs::{File, remove_file};
+use std::fs::File;
 use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
@@ -34,22 +33,6 @@ fn get_base_path() -> Result<(PathBuf), Box<Error>> {
 }
 
 
-fn create_pidfile() -> Result<(), Box<Error>> {
-    let base_path = get_base_path()?;
-    let mut file = File::create(base_path.join("check.pid"))?;
-    let pid = process::id().to_string();
-    file.write_all(pid.as_bytes())?;
-    Ok(())
-}
-
-
-fn remove_pidfile() -> Result<(), Box<Error>> {
-    let base_path = get_base_path()?;
-    remove_file(base_path.join("check.pid"))?;
-    Ok(())
-}
-
-
 fn get_wanted_hashes() -> Result<HashSet<String>, String> {
     let wanted_hashes: HashSet<String> = args().skip(1).collect();
     if wanted_hashes.is_empty() {
@@ -74,18 +57,13 @@ fn check_hashes(record: Record, wanted: &HashSet<String>) -> HashSet<String> {
 
 
 fn scan_file(
-    fileno: usize,
-    filename: &str,
-    wanted: &HashSet<String>,
-    found: &mut HashSet<String>
+    filename: &str, wanted: &HashSet<String>, found: &mut HashSet<String>
 ) -> Result<bool, Box<Error>> {
     let base_path = get_base_path()?;
     let file = File::open(base_path.join("registry").join(&filename))?;
     let mut rdr = ReaderBuilder::new().flexible(true).delimiter(b';').from_reader(file);
-    for (i, result) in rdr.deserialize().enumerate() {
-        if i % 1000 == 0 {
-            println!("LINE:{} {} {}", fileno, filename, i);
-        }
+    println!("FILE:{}", filename);
+    for result in rdr.deserialize() {
         let record: Record = result?;
         let checked_hashes = check_hashes(record, &wanted);
         found.extend(checked_hashes);
@@ -100,8 +78,8 @@ fn scan_file(
 fn run() -> Result<(), Box<Error>> {
     let wanted_hashes = get_wanted_hashes()?;
     let mut found_hashes: HashSet<String> = HashSet::new();
-    for (fileno, filename) in FILES.iter().enumerate() {
-        if scan_file(fileno + 1, filename, &wanted_hashes, &mut found_hashes)? {
+    for filename in FILES.iter() {
+        if scan_file(filename, &wanted_hashes, &mut found_hashes)? {
             return Ok(())
         }
     }
@@ -114,11 +92,9 @@ fn run() -> Result<(), Box<Error>> {
 
 fn main() {
     let start = Instant::now();
-    create_pidfile().unwrap();
     if let Err(err) = run() {
         println!("ERROR:{}", err);
         process::exit(1);
     }
-    remove_pidfile().unwrap();
     println!("RUNTIME:{}", start.elapsed().as_secs());
 }
